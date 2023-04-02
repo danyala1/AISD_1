@@ -68,3 +68,23 @@ class Three {
 		return true;
 
 	}
+	Leaves* rec_contains(Leaves* elem, int key) {
+		//if (elem == nullptr) return 0;
+		//if (elem->value == key) return 1;
+		//if (elem->value > key) return rec_contains(elem->Right, key);
+		//else return rec_contains(elem->Left, key);
+		if (elem != NULL && elem->value != key)
+		{
+			if (key < elem->value) elem = rec_contains(elem->Left, key);
+			else elem = rec_contains(elem->Right, key);
+		}
+		return elem;
+	}
+	void rec_print(Leaves* elem)
+	{
+		if (elem != nullptr) {
+			if (elem->Left)rec_print(elem->Left);
+			cout << elem->value << ' ';
+			if (elem->Right)rec_print(elem->Right);
+		}
+	}
