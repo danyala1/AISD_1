@@ -1,6 +1,8 @@
 #include <iostream>
 #include <clocale>
 #include <conio.h>
+#include <vector>
+#include <ctime>
 using namespace std;
 class Three {
 	struct Leaves {
@@ -141,11 +143,11 @@ public:
 	bool insert(int key) {
 		return rec_insert(this->root, key);
 
-	}//
+	}//вставка элемента
 	bool contains(int key) {
 		if (rec_contains(this->root, key)) return true;
 		return false;
-	} //
+	} //проверка наличи€ элемента
 
 	int Find() {
 
@@ -154,5 +156,113 @@ public:
 	void erase(int key) {
 		rec_erase(this->root, key);
 
-	} //
+	} //удаление элемента
 };
+size_t lcg() {
+	static size_t x = 0;
+	x = (1021 * x + 24631) % 116640;
+	return x;
+}
+
+float TestFirst(int value) {
+
+	//дл€ 100 раз
+	//ќтсечь  врем€
+	Three B(lcg());
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.insert(lcg());
+	}
+	//остановить врем€
+	//врем€ добавить в вектор
+
+	//сумму вектора времени делим на 100 и возвращаем
+	return 1;
+}
+float TestSecond(int value) {
+
+	//дл€ 1000 раз
+	//ќтсечь  врем€
+	Three B(lcg());
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.contains(lcg());
+	}
+	//остановить врем€
+	//врем€ добавить в вектор
+
+	//сумму вектора времени делим на 1000 и возвращаем
+	return 1;
+}
+
+float TestThird(int value) {
+
+	//дл€ 1000 раз
+	//ќтсечь  врем€
+	Three B(lcg());
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.insert(lcg());
+	}
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.erase(lcg());
+	}
+	//остановить врем€
+	//врем€ добавить в вектор
+
+	//сумму вектора времени делим на 1000 и возвращаем
+	return 1;
+}
+float TestVectorFirst(int value) {
+
+	vector<double> TimeVector(value);
+	//дл€ 100 раз
+	clock_t t0 = clock();
+	Three B(lcg());
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.insert(lcg());
+	}
+	clock_t t1 = clock();//остановить врем€
+	//врем€ добавить в вектор
+	cout << (double)(t1 - t0) / CLOCKS_PER_SEC;
+	TimeVector.push_back((double)(t1 - t0) / CLOCKS_PER_SEC);
+	//сумму вектора времени делим на 100 и возвращаем
+	return 1;
+}
+float TestVectorSecond(int value) {
+
+	//дл€ 1000 раз
+	//ќтсечь  врем€
+	Three B(lcg());
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.contains(lcg());
+	}
+	//остановить врем€
+	//врем€ добавить в вектор
+
+	//сумму вектора времени делим на 1000 и возвращаем
+	return 1;
+}
+
+float TestVectorThird(int value) {
+
+	//дл€ 1000 раз
+	//ќтсечь  врем€
+	Three B(lcg());
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.insert(lcg());
+	}
+	for (int i = 0; i < value - 1; i++)
+	{
+		B.erase(lcg());
+	}
+	//остановить врем€
+	//врем€ добавить в вектор
+
+	//сумму вектора времени делим на 1000 и возвращаем
+	return 1;
+}
