@@ -88,3 +88,32 @@ class Three {
 			if (elem->Right)rec_print(elem->Right);
 		}
 	}
+	void clear(Leaves*& elem)
+	{
+		if (elem)
+		{
+			clear(elem->Left);
+			clear(elem->Right);
+			delete elem;
+			elem = NULL;
+		}
+
+	}
+	void copy(Leaves*& first, const Leaves* second)
+	{
+		if (!second)
+		{
+			first = NULL;
+			return;
+		}
+		first = new Leaves;
+		first->value = second->value;
+		copy(first->Left, second->Left);
+		copy(first->Right, second->Right);
+	}
+	Leaves* FindMin(Leaves* elem) {
+		if (elem->Left) {
+			return FindMin(elem->Left);
+		}
+		return elem;
+	}
