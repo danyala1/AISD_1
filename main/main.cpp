@@ -1,5 +1,5 @@
 #include <iostream>
-# include <clocale>
+#include <clocale>
 #include <conio.h>
 using namespace std;
 class Three {
@@ -38,4 +38,33 @@ class Three {
 			}
 		}
 		return elem;
+	}
+	bool rec_insert(Leaves* elem, int key) {
+
+		if (elem == nullptr || key == elem->value) return false;
+		if (key > elem->value) {
+			if (elem->Right)
+			{
+				return rec_insert(elem->Right, key);
+			}
+			else {
+				Leaves* tmp = new Leaves;
+				elem->Right = tmp;
+				tmp->value = key;
+
+			}
+		}
+		else if (key < elem->value) {
+			if (elem->Left) {
+				return rec_insert(elem->Left, key);
+			}
+			else {
+				Leaves* tmp = new Leaves;
+				elem->Left = tmp;
+				tmp->value = key;
+
+			}
+		}
+		return true;
+
 	}
