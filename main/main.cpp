@@ -117,3 +117,42 @@ class Three {
 		}
 		return elem;
 	}
+public:
+	Three(Three& src) {
+		root = NULL;
+		copy(root, src.root);
+	}
+	~Three() { clear(root); }
+	Three(int key) {
+		//Leaves* root = new Leaves;
+		root->value = key;
+	}
+	void print() {
+		rec_print(this->root);
+	}
+
+	Three& operator=(const Three& src)
+	{
+		if (this == (&src)) { return *this; }
+		clear(root);
+		copy(root, src.root);
+		return *this;
+	}
+	bool insert(int key) {
+		return rec_insert(this->root, key);
+
+	}//
+	bool contains(int key) {
+		if (rec_contains(this->root, key)) return true;
+		return false;
+	} //
+
+	int Find() {
+
+		return (FindMin(this->root))->value;
+	}
+	void erase(int key) {
+		rec_erase(this->root, key);
+
+	} //
+};
