@@ -2,7 +2,7 @@
 # include <clocale>
 #include <conio.h>
 #include<vector>
-#include <ctime>
+
 using namespace std;
 class Three {
 	struct Leaves {
@@ -10,6 +10,8 @@ class Three {
 		Leaves* Left = nullptr;
 		Leaves* Right = nullptr;
 	};
+	int count = 0;
+	int height = 0;
 	Leaves* root = new Leaves;
 	Leaves* rec_erase(Leaves* elem, int key) {
 		if (elem == NULL) return elem;
@@ -38,6 +40,8 @@ class Three {
 				elem->value = tmp->value;
 				elem->Right = rec_erase(elem->Right, tmp->value);
 			}
+			this->count--;
+			this->height--;
 		}
 		return elem;
 	}
@@ -53,7 +57,7 @@ class Three {
 				Leaves* tmp = new Leaves;
 				elem->Right = tmp;
 				tmp->value = key;
-
+				this->height++;
 			}
 		}
 		else if (key < elem->value) {
@@ -64,7 +68,7 @@ class Three {
 				Leaves* tmp = new Leaves;
 				elem->Left = tmp;
 				tmp->value = key;
-
+				this->height++;
 			}
 		}
 		return true;
@@ -84,10 +88,11 @@ class Three {
 	}
 	void rec_print(Leaves* elem)
 	{
-		if (elem != nullptr) {
-			if (elem->Left)rec_print(elem->Left);
-			cout << elem->value << ' ';
-			if (elem->Right)rec_print(elem->Right);
+		if (elem)
+		{
+			cout << elem->value << " ";
+			rec_print(elem->Left);
+			rec_print(elem->Right);
 		}
 	}
 	void clear(Leaves*& elem)
@@ -123,11 +128,16 @@ public:
 	Three(Three& src) {
 		root = NULL;
 		copy(root, src.root);
+		this->count = src.count;
 	}
-	~Three() { clear(root); }
+	~Three() {
+		clear(root); this->count = 0; this->height = 0;
+	}
 	Three(int key) {
 		//Leaves* root = new Leaves;
 		root->value = key;
+		this->count = 1;
+		this->height = 1;
 	}
 	void print() {
 		rec_print(this->root);
@@ -138,10 +148,14 @@ public:
 		if (this == (&src)) { return *this; }
 		clear(root);
 		copy(root, src.root);
+		this->count = src.count;
 		return *this;
 	}
 	bool insert(int key) {
-		return rec_insert(this->root, key);
+
+		bool tmp = rec_insert(this->root, key);
+		if (tmp) this->count++;
+		return tmp;
 
 	}//вставка элемента
 	bool contains(int key) {
@@ -150,8 +164,11 @@ public:
 	} //проверка наличия элемента
 
 	int FindM() {
-
-		return (FindMin(this->root))->value;
+		if (this->count == 0) {
+			std::cout << "Нет элементов";
+			return 0;
+		}
+		else return (FindMin(this->root))->value;
 	}
 	void erase(int key) {
 		this->root = rec_erase(this->root, key);
@@ -165,142 +182,190 @@ size_t lcg() {
 	x = (1021 * x + 24631) % 116640;
 	return x;
 }
+#include <chrono>
+using namespace std::chrono;
 
-float TestFirst(int value) {
+
+double TestFirstHelp(int value, bool Is_Vector)
+{
+	if (!Is_Vector) {
+		//Отсечь  время
+		auto start = high_resolution_clock::now();
+		Three B(lcg());
+		for (int i = 0; i < value - 1; i++) B.insert(lcg());
+		auto stop = high_resolution_clock::now();
+		chrono::duration<double> duration = stop - start;
+		return (double)duration.count();
+	}
+	vector<int> TimeVector(value);
+	//для 100 раз
+	auto start = high_resolution_clock::now();
+	for (int i = 0; i < value - 1; i++)  TimeVector.push_back(lcg());
+	auto stop = high_resolution_clock::now();
+	chrono::duration<double> duration = stop - start;
+	return(double)duration.count();
+}
+double TestSecondHelp(int value, bool Is_Vector) {
+	if (!Is_Vector) {
+		Three B(lcg());
+		for (int j = 0; j < value; j++) B.insert(lcg());
+		auto start = high_resolution_clock::now();
+		B.contains(lcg());
+		auto stop = high_resolution_clock::now();
+		chrono::duration<double> duration = stop - start;
+		return (double)duration.count();
+	}
+	vector<int> TimeVector(value);
+	for (int i = 0; i < value; i++)TimeVector.push_back(lcg());
+	auto start = high_resolution_clock::now();
+	find(TimeVector.begin(), TimeVector.end(), lcg());    //erase(lcg());
+	auto stop = high_resolution_clock::now();
+	chrono::duration<double> duration = stop - start;
+	return (double)duration.count();
+
+
+}
+double TestThirdHelp(int value, bool Is_Vector = true)
+{
+	if (!Is_Vector) {
+		Three B(lcg());
+		for (int i = 0; i < value - 1; i++)B.insert(lcg());
+		auto start = high_resolution_clock::now();
+		B.insert(lcg());
+		B.erase(lcg());
+		auto stop = high_resolution_clock::now();
+		chrono::duration<double> duration = stop - start;
+		return (double)duration.count();
+	}
+
+
+}
+double TestFirst(int value) {
+	double sum = 0;
 
 	//для 100 раз
-	//Отсечь  время
-	Three B(lcg());
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.insert(lcg());
+	for (int j = 0; j < 100; j++) {
+
+		sum += TestFirstHelp(value, false);
 	}
 	//остановить время
 	//время добавить в вектор
 
 	//сумму вектора времени делим на 100 и возвращаем
-	return 1;
+	return sum / 100;
 }
-float TestSecond(int value) {
-
+double TestSecond(int value) {
+	double  sum = 0;
 	//для 1000 раз
 	//Отсечь  время
-	Three B(lcg());
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.contains(lcg());
+	for (int j = 0; j < 1000; j++) {
+		sum += TestSecondHelp(value, false);
 	}
 	//остановить время
 	//время добавить в вектор
 
 	//сумму вектора времени делим на 1000 и возвращаем
-	return 1;
+
+	return sum / 1000;
 }
+double TestThird(int value) {
 
-float TestThird(int value) {
-
+	double  sum = 0;
 	//для 1000 раз
 	//Отсечь  время
-	Three B(lcg());
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.insert(lcg());
-	}
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.erase(lcg());
+	for (int j = 0; j < 1000; j++) {
+		sum += TestThirdHelp(value);
 	}
 	//остановить время
 	//время добавить в вектор
 
 	//сумму вектора времени делим на 1000 и возвращаем
-	return 1;
+	return sum / 1000;
 }
-float TestVectorFirst(int value) {
 
-	vector<double> TimeVector(value);
-	//для 100 раз
-	clock_t t0 = clock();
-	Three B(lcg());
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.insert(lcg());
-	}
-	clock_t t1 = clock();//остановить время
+double TestVectorFirst(int value) {
+
+	double sum = 0;
 	//время добавить в вектор
-	cout << (double)(t1 - t0) / CLOCKS_PER_SEC;
-	TimeVector.push_back((double)(t1 - t0) / CLOCKS_PER_SEC);
+	for (int j = 0; j < 100; j++) {
+
+		sum += TestFirstHelp(value, true);
+	}
 	//сумму вектора времени делим на 100 и возвращаем
-	return 1;
+	return sum / 100;
 }
-float TestVectorSecond(int value) {
+double TestVectorSecond(int value) {
 
 	//для 1000 раз
 	//Отсечь  время
-	Three B(lcg());
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.contains(lcg());
+
+	double sum = 0;
+	for (int j = 0; j < 1000; j++) {
+
+		sum += TestSecondHelp(value, true);
+
 	}
 	//остановить время
-	//время добавить в вектор
+
 
 	//сумму вектора времени делим на 1000 и возвращаем
-	return 1;
+	return sum / 1000;
 }
-
-float TestVectorThird(int value) {
-
+double TestVectorThird(int value) {
+	vector<int> TimeVector(value);
 	//для 1000 раз
 	//Отсечь  время
-	Three B(lcg());
-	for (int i = 0; i < value - 1; i++)
+	double sum = 0;
+	for (int i = 0; i < value - 1; i++)TimeVector.push_back(lcg());
+	for (int j = 0; j < 1000; j++)
 	{
-		B.insert(lcg());
+
+		auto start = high_resolution_clock::now();
+		TimeVector.push_back(lcg());
+		TimeVector.erase(std::remove(TimeVector.begin(), TimeVector.end(), lcg()), TimeVector.end());
+		auto stop = high_resolution_clock::now();
+		chrono::duration<double> duration = stop - start;
+		sum += (double)duration.count();
 	}
-	for (int i = 0; i < value - 1; i++)
-	{
-		B.erase(lcg());
-	}
-	//остановить время
-	//время добавить в вектор
+
+
 
 	//сумму вектора времени делим на 1000 и возвращаем
-	return 1;
+	return sum / 1000;
 }
 
-void RecElem() {
-	/*
-	Создаем вектор2
-	Для каждого элемента elem1 вектора 1:
-		если элемент есть в векторе2: отмена
-		иначе:
-			count=0
-			Для каждого элемента elem2 вектора1:
-				если elem1==elem2:
-					count++;
-			если count>1:  elem1 добавим в вектор2
+void VectorReturn()
+{
+	//создаем вектор 
+	std::vector<int> myVector = { 1,2,3,3,4,5,6,8,7,8 };
+	std::vector<int> new_vector;
+	cout << "Наш вектор:\n";
+	for (int i = 0; i < myVector.capacity(); i++) cout << myVector[i] << ' ';
+	cout << "\nПовторяющиеся элементы : \n";
 
-	cout<<"Повторяющиеся элементы: "<< вектор2
+	for (int i = 0; i < myVector.capacity(); i++)
+	{
+		int count = 0;
+		for (int j = 0; j < myVector.capacity(); j++)
+		{
+			if (myVector[i] == myVector[j]) count++;
+		}
+		if (count < 1)
+		{
+			int value = myVector[i];
+			new_vector.push_back(value);
+
+		}
+
+	}
+
+
+	for (int i = 0; i < new_vector.capacity(); i++) cout << new_vector[i] << ' ';
+
 }
-
 
 int main() {
-	/*Three A(20);
-	A.insert(-110);
-	A.insert(25);
-	A.insert(5);
-	A.insert(10);
-	A.insert(30);
-	A.insert(22);
 
-	A.print();
-	cout<<A.contains(100);
-	cout << A.Find();
-	A.erase(25);
-	cout << endl;
-	A.print();
-	*/
 	setlocale(LC_ALL, "Russian");
 	int tmp_value;
 	cout << "Введите значение первого элемена дерева: ";
@@ -311,7 +376,7 @@ int main() {
 		system("CLS");
 		cout << "Наши элементы :\n";
 		A.print();
-		cout << "\nВыберите Действие : \n1)Добавить элемент в дерево\n2)Удалить элемент из дерева\n3)Проверить существует ли элемент\n4)Минимальное значение дерева\n\n__ТЕСТЫ_ДЛЯ_ДЕРЕВА__\n\n5)Тест на заполнение\n6)Тест на поиск\n7)Тест на добавлеие удаление \n\n__ТЕСТЫ_ДЛЯ_ВЕКТОРОВ__\n\n8)Тест на заполнение\n9)Тест на поиск\n10)Тест на добавлеие удаление \n11)Заполнить вектор элементами и вернуть повторяющиея значения\n12)Выход";
+		cout << "\nВыберите Действие : \n1)Добавить элемент в дерево\n2)Удалить элемент из дерева\n3)Проверить существует ли элемент\n4)Минимальное значение дерева\n5)Произвести тесты\n6)Заполнить вектор элементами и вернуть повторяющиея значения\n7)Выход\n";
 		cin >> tmp_value;
 		switch (tmp_value)
 		{
@@ -319,240 +384,59 @@ int main() {
 			cout << "Введите элемент:";
 			cin >> tmp_value;
 			if (A.insert(tmp_value)) cout << "\nУспешно";
-			else cout << "\nНе получилось";
+			else cout << "\nНе добавили";
+			tmp_value = 0;
 			_getch();
 			break;
 		case 2:
 			cout << "Введите значение удаляемого элемента:";
 			cin >> tmp_value;
 			A.erase(tmp_value);
+			tmp_value = 0;
 			break;
 		case 3:
 			cout << "Введите элемент:";
 			cin >> tmp_value;
 			if (A.contains(tmp_value)) cout << "\nСуществует";
 			else cout << "\nНе существует";
+			tmp_value = 0;
 			_getch();
+			break;
 		case 4:
-			cout << "Минимальное значение дерева : " << A.FindM();
+			if (A.FindM())cout << "Минимальное значение дерева : " << A.FindM();
 			_getch();
+			break;
 		case 5:
-			do {
-				cout << "Выберите сколько значений протестируем:\n1) 1000 \n2) 10 000\n3) 100 000  \n4)Отмена";
-				cin >> tmp_value;
-				switch (tmp_value)
-				{
-				case 1:
-					//сохраняем в вектор ячейка 1
-					cout << "Среднее время выполения теста: " << TestFirst(1000);
-					_getch();
-					break;
-				case 2:
-					//сохраняем в вектор ячейка 2
-					cout << "Среднее время выполения теста: " << TestFirst(10000);
-					_getch();
-					break;
-				case 3:
-					//сохраняем в вектор ячейка 3
-					cout << "Среднее время выполения теста: " << TestFirst(100000);
-					_getch();
-					break;
-				case 4:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-				system("CLS");
-			} while (tmp_value != 4);
+			cout << "\nСреднее время заполнения контейнера на 1000: " << TestFirst(1000);
+			cout << "\nСреднее время заполнения контейнера на 10 000:" << TestFirst(10000);
+			cout << "\nСреднее время заполнения контейнера на 100 000: " << TestFirst(100000);
+			cout << "\nСреднее время поиска в заполненном контейнере на 1000: " << TestSecond(1000);
+			cout << "\nСреднее время поиска в заполненном контейнере на 10 000: " << TestSecond(10000);
+			cout << "\nСреднее время поиска в заполненном контейнере на 100 000: " << TestSecond(100000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 1000: " << TestThird(1000);
+
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 10 000: " << TestThird(10000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 100 000: " << TestThird(100000);
+
+			cout << "\nСреднее время заполнения вектора на 1000: " << TestVectorFirst(1000);
+			cout << "\nСреднее время заполнения вектора на 10 000: " << TestVectorFirst(10000);
+			cout << "\nСреднее время заполнения вектора на 100 000: " << TestVectorFirst(1000000);
+			cout << "\nСреднее время поиска в заполненном векторе на 1000: " << TestVectorSecond(1000);
+			cout << "\nСреднее время поиска в заполненном векторе на 10 000: " << TestVectorSecond(10000);
+			cout << "\nСреднее время поиска в заполненном векторе на 100 000: " << TestVectorSecond(100000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 1000: " << TestVectorThird(1000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 10 000: " << TestVectorThird(10000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 100 000: " << TestVectorThird(100000);
+			_getch();
 			break;
 		case 6:
-			do {
-				cout << "Выберите сколько значений протестируем:\n1) 1000 \n2) 10 000\n3) 100 000  \n4)Отмена";
-				cin >> tmp_value;
-				switch (tmp_value)
-				{
-				case 1:
-					//сохраняем в вектор ячейка 4
-					cout << "Среднее время выполения теста: " << TestSecond(1000);
-					_getch();
-					break;
-				case 2:
-					//сохраняем в вектор ячейка 5
-					cout << "Среднее время выполения теста: " << TestSecond(10000);
-					_getch();
-					break;
-				case 3:
-					//сохраняем в вектор ячейка 6
-					cout << "Среднее время выполения теста: " << TestSecond(100000);
-					_getch();
-					break;
-				case 4:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-				system("CLS");
-			} while (tmp_value != 4);
+			VectorReturn();
+			_getch();
 			break;
-		case 7:
-			do {
-				cout << "Выберите сколько значений протестируем:\n1) 1000 \n2) 10 000\n 3) 100 000  \n4)Отмена";
-				cin >> tmp_value;
-				switch (tmp_value)
-				{
-				case 1:
-					//сохраняем в вектор ячейка 7
-					cout << "Среднее время выполения теста: " << TestThird(1000);
-					_getch();
-					break;
-				case 2:
-					//сохраняем в вектор ячейка 8
-					cout << "Среднее время выполения теста: " << TestThird(10000);
-					_getch();
-					break;
-				case 3:
-					//сохраняем в вектор ячейка 9
-					cout << "Среднее время выполения теста: " << TestThird(100000);
-					_getch();
-					break;
-				case 4:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-				system("CLS");
-			} while (tmp_value != 4);
-			break;
-		case 8:
-			do {
-				cout << "Выберите сколько значений протестируем:\n1) 1000 \n2) 10 000\n3) 100 000  \n4)Отмена";
-				cin >> tmp_value;
-				switch (tmp_value)
-				{
-				case 1:
-					//сохраняем в вектор ячейка 1
-					cout << "Среднее время выполения теста: " << TestVectorFirst(1000);
-					_getch();
-					break;
-				case 2:
-					//сохраняем в вектор ячейка 2
-					cout << "Среднее время выполения теста: " << TestVectorFirst(10000);
-					_getch();
-					break;
-				case 3:
-					//сохраняем в вектор ячейка 3
-					cout << "Среднее время выполения теста: " << TestVectorFirst(100000);
-					_getch();
-					break;
-				case 4:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-				system("CLS");
-			} while (tmp_value != 4);
-			break;
-		case 9:
-			do {
-				cout << "Выберите сколько значений протестируем:\n1) 1000 \n2) 10 000\n3) 100 000  \n4)Отмена";
-				cin >> tmp_value;
-				switch (tmp_value)
-				{
-				case 1:
-					//сохраняем в вектор ячейка 4
-					cout << "Среднее время выполения теста: " << TestVectorSecond(1000);
-					_getch();
-					break;
-				case 2:
-					//сохраняем в вектор ячейка 5
-					cout << "Среднее время выполения теста: " << TestVectorSecond(10000);
-					_getch();
-					break;
-				case 3:
-					//сохраняем в вектор ячейка 6
-					cout << "Среднее время выполения теста: " << TestVectorSecond(100000);
-					_getch();
-					break;
-				case 4:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-				system("CLS");
-			} while (tmp_value != 4);
-			break;
-		case 10:
-			do {
-				cout << "Выберите сколько значений протестируем:\n1) 1000 \n2) 10 000\n 3) 100 000  \n4)Отмена";
-				cin >> tmp_value;
-				switch (tmp_value)
-				{
-				case 1:
-					//сохраняем в вектор ячейка 7
-					cout << "Среднее время выполения теста: " << TestVectorThird(1000);
-					_getch();
-					break;
-				case 2:
-					//сохраняем в вектор ячейка 8
-					cout << "Среднее время выполения теста: " << TestVectorThird(10000);
-					_getch();
-					break;
-				case 3:
-					//сохраняем в вектор ячейка 9
-					cout << "Среднее время выполения теста: " << TestVectorThird(100000);
-					_getch();
-					break;
-				case 4:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-				system("CLS");
-			} while (tmp_value != 4);
-			break;
-		case 11:
-			//создаем вектор 
-			int tmp_value1;
-			do {
-				cout << "Наш вектор: \n";
-				//выводм вектор 
-				cout << "\nДобавить ещё?\n1)Да\n2)Нет ";
-				cin >> tmp_value1;
-				switch (tmp_value1)
-				{
-				case 1:
-					cout << "Введите элемент, который добавим в вектор: ";
-					cin >> tmp_value;
-					//добавляем в вектор значения
-				case 2:
-					break;
-				default:
-					cout << "\nНет такого элемента\n";
-					_getch();
-					break;
-				}
-
-			} while (tmp_value1 != 2);
-
-			cout << "Наш вектор:";
-			RecElem();
-
 		default:
 			break;
 		}
 
-	} while (tmp_value != 12);
+	} while (tmp_value != 7);
 
 }
