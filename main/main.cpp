@@ -1,7 +1,7 @@
 #include <iostream>
-#include <clocale>
+# include <clocale>
 #include <conio.h>
-#include <vector>
+#include<vector>
 #include <ctime>
 using namespace std;
 class Three {
@@ -149,15 +149,17 @@ public:
 		return false;
 	} //проверка наличия элемента
 
-	int Find() {
+	int FindM() {
 
 		return (FindMin(this->root))->value;
 	}
 	void erase(int key) {
-		rec_erase(this->root, key);
+		this->root = rec_erase(this->root, key);
 
 	} //удаление элемента
 };
+
+
 size_t lcg() {
 	static size_t x = 0;
 	x = (1021 * x + 24631) % 116640;
@@ -266,6 +268,7 @@ float TestVectorThird(int value) {
 	//сумму вектора времени делим на 1000 и возвращаем
 	return 1;
 }
+
 void RecElem() {
 	/*
 	Создаем вектор2
