@@ -86,14 +86,21 @@ class Three {
 		}
 		return elem;
 	}
-	void rec_print(Leaves* elem)
+	void rec_print(Leaves* root, int ident, int level) const
 	{
-		if (elem)
+		if (root)
 		{
-			cout << elem->value << " ";
-			rec_print(elem->Left);
-			rec_print(elem->Right);
+			rec_print(root->Left, -1, level + 2);
+			for (int i = 0; i < level; i++) cout << "   ";
+			if (ident == 0)
+				cout << root->value << "----------------------------------" << endl;
+			if (ident == 1)
+				cout << root->value << endl;
+			if (ident == -1)
+				cout << root->value << endl;
+			rec_print(root->Right, 1, level + 2);
 		}
+
 	}
 	void clear(Leaves*& elem)
 	{
@@ -140,7 +147,7 @@ public:
 		this->height = 1;
 	}
 	void print() {
-		rec_print(this->root);
+		rec_print(this->root, 1, this->height);
 	}
 
 	Three& operator=(const Three& src)
@@ -334,14 +341,44 @@ double TestVectorThird(int value) {
 	return sum / 1000;
 }
 
+
+
+void remove(std::vector<int>& v)
+{
+	auto end = v.end();
+	for (auto it = v.begin(); it != end; ++it) {
+		end = std::remove(it + 1, end, *it);
+	}
+
+	v.erase(end, v.end());
+}
 void VectorReturn()
 {
 	//создаем вектор 
-	std::vector<int> myVector = { 1,2,3,3,4,5,6,8,7,8 };
-	std::vector<int> new_vector;
+	std::vector<int> myVector = { 1,2,3,3,4,5,6,8,7,8,0 };
+
 	cout << "Наш вектор:\n";
-	for (int i = 0; i < myVector.capacity(); i++) cout << myVector[i] << ' ';
+	for (int i = 0; i < myVector.capacity(); i++)
+	{
+		cout << myVector[i] << ' ';
+	}
 	cout << "\nПовторяющиеся элементы : \n";
+	int current_no_repeat = 0;
+	for (int i = 0; i < myVector.capacity(); i++)
+	{
+		int count = 0;
+		for (int j = 0; j < myVector.capacity(); j++)
+		{
+			if (myVector[i] == myVector[j]) count++;
+		}
+
+		if (count < 2)
+		{
+			current_no_repeat++;
+		}
+
+	}
+	std::vector<int> newVector((myVector.capacity() - current_no_repeat) / 2);
 
 	for (int i = 0; i < myVector.capacity(); i++)
 	{
@@ -350,17 +387,18 @@ void VectorReturn()
 		{
 			if (myVector[i] == myVector[j]) count++;
 		}
-		if (count < 1)
-		{
-			int value = myVector[i];
-			new_vector.push_back(value);
 
+		if (count > 1)
+		{
+			newVector.push_back(myVector[i]);
 		}
 
 	}
-
-
-	for (int i = 0; i < new_vector.capacity(); i++) cout << new_vector[i] << ' ';
+	remove(newVector);
+	for (int i = 1; i < newVector.capacity() / 2; i++)
+	{
+		cout << newVector[i] << ' ';
+	}
 
 }
 
@@ -384,7 +422,6 @@ int main() {
 			cout << "Введите элемент:";
 			cin >> tmp_value;
 			if (A.insert(tmp_value)) cout << "\nУспешно";
-			else cout << "\nНе добавили";
 			tmp_value = 0;
 			_getch();
 			break;
