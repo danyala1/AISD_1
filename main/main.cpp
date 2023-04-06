@@ -1,7 +1,7 @@
 #include <iostream>
-# include <clocale>
+#include <clocale>
 #include <conio.h>
-#include<vector>
+#include <vector>
 
 using namespace std;
 class Three {
@@ -355,7 +355,7 @@ void remove(std::vector<int>& v)
 void VectorReturn()
 {
 	//создаем вектор 
-	std::vector<int> myVector = { 1,2,3,3,4,5,6,8,7,8,0 };
+	std::vector<int> myVector = { 1,2,3,3,4,5,6,7,8,5,8 };
 
 	cout << "Наш вектор:\n";
 	for (int i = 0; i < myVector.capacity(); i++)
@@ -402,12 +402,24 @@ void VectorReturn()
 
 }
 
+int Check()
+{
+	int number = 0;
+	while (!(cin >> number) || (cin.peek() != '\n'))
+	{
+		cin.clear();
+		while (cin.get() != '\n');
+		cout << "Enter a number" << endl;
+	}
+	return number;
+}
+
 int main() {
 
 	setlocale(LC_ALL, "Russian");
 	int tmp_value;
 	cout << "Введите значение первого элемена дерева: ";
-	cin >> tmp_value;
+	tmp_value = Check();
 	Three A(tmp_value);
 
 	do {
@@ -415,25 +427,25 @@ int main() {
 		cout << "Наши элементы :\n";
 		A.print();
 		cout << "\nВыберите Действие : \n1)Добавить элемент в дерево\n2)Удалить элемент из дерева\n3)Проверить существует ли элемент\n4)Минимальное значение дерева\n5)Произвести тесты\n6)Заполнить вектор элементами и вернуть повторяющиея значения\n7)Выход\n";
-		cin >> tmp_value;
+		tmp_value = Check();
 		switch (tmp_value)
 		{
 		case 1:
 			cout << "Введите элемент:";
-			cin >> tmp_value;
+			tmp_value = Check();
 			if (A.insert(tmp_value)) cout << "\nУспешно";
 			tmp_value = 0;
 			_getch();
 			break;
 		case 2:
 			cout << "Введите значение удаляемого элемента:";
-			cin >> tmp_value;
+			tmp_value = Check();
 			A.erase(tmp_value);
 			tmp_value = 0;
 			break;
 		case 3:
 			cout << "Введите элемент:";
-			cin >> tmp_value;
+			tmp_value = Check();
 			if (A.contains(tmp_value)) cout << "\nСуществует";
 			else cout << "\nНе существует";
 			tmp_value = 0;
@@ -445,7 +457,9 @@ int main() {
 			break;
 		case 5:
 			cout << "\nСреднее время заполнения контейнера на 1000: " << TestFirst(1000);
+			cout << "\nСреднее время заполнения контейнера на 5000: " << TestFirst(5000);
 			cout << "\nСреднее время заполнения контейнера на 10 000:" << TestFirst(10000);
+			cout << "\nСреднее время заполнения контейнера на 50000: " << TestFirst(50000);
 			cout << "\nСреднее время заполнения контейнера на 100 000: " << TestFirst(100000);
 			cout << "\nСреднее время поиска в заполненном контейнере на 1000: " << TestSecond(1000);
 			cout << "\nСреднее время поиска в заполненном контейнере на 10 000: " << TestSecond(10000);
