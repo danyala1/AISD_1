@@ -1,7 +1,7 @@
 #include <iostream>
-#include <clocale>
+# include <clocale>
 #include <conio.h>
-#include <vector>
+#include<vector>
 
 using namespace std;
 class Three {
@@ -18,12 +18,10 @@ class Three {
 		else if (key < elem->value) elem->Left = rec_erase(elem->Left, key);
 		else if (key > elem->value) elem->Right = rec_erase(elem->Right, key);
 		else {
-			// Case 1:  No child
 			if (elem->Left == NULL && elem->Right == NULL) {
 				delete elem;
 				elem = NULL;
 			}
-			//Case 2: One child 
 			else if (elem->Left == NULL) {
 				struct Leaves* temp = elem;
 				elem = elem->Right;
@@ -34,14 +32,14 @@ class Three {
 				elem = elem->Left;
 				delete tmp;
 			}
-			// case 3: 2 children
+
 			else {
 				struct Leaves* tmp = FindMin(elem->Right);
 				elem->value = tmp->value;
 				elem->Right = rec_erase(elem->Right, tmp->value);
 			}
 			this->count--;
-			this->height--;
+
 		}
 		return elem;
 	}
@@ -177,9 +175,10 @@ public:
 		}
 		else return (FindMin(this->root))->value;
 	}
-	void erase(int key) {
+	bool erase(int key) {
 		this->root = rec_erase(this->root, key);
-
+		return true;
+		//--------------------------------------------------------------
 	} //удаление элемента
 };
 
@@ -341,7 +340,17 @@ double TestVectorThird(int value) {
 	return sum / 1000;
 }
 
-
+int Check()
+{
+	int number = 0;
+	while (!(cin >> number) || (cin.peek() != '\n'))
+	{
+		cin.clear();
+		while (cin.get() != '\n');
+		cout << "Enter a number" << endl;
+	}
+	return number;
+}
 
 void remove(std::vector<int>& v)
 {
@@ -354,64 +363,41 @@ void remove(std::vector<int>& v)
 }
 void VectorReturn()
 {
-	//создаем вектор 
-	std::vector<int> myVector = { 1,2,3,3,4,5,6,7,8,5,8 };
-
-	cout << "Наш вектор:\n";
-	for (int i = 0; i < myVector.capacity(); i++)
-	{
-		cout << myVector[i] << ' ';
-	}
-	cout << "\nПовторяющиеся элементы : \n";
-	int current_no_repeat = 0;
-	for (int i = 0; i < myVector.capacity(); i++)
-	{
-		int count = 0;
-		for (int j = 0; j < myVector.capacity(); j++)
-		{
-			if (myVector[i] == myVector[j]) count++;
+	int tmp;
+	int flag = 1;
+	std::vector<int> myVector;
+	do {
+		cout << "Введите эелмент вектора : ";
+		tmp = Check();
+		myVector.push_back(tmp);
+		cout << "Добавить ещё? \n1)Да\n2)Нет\n";
+		flag = Check();
+		while (flag != 1 && flag != 2) {
+			cout << "\nНет такого варианта ответа\n";
+			_getch();
+			system("CLS");
+			cout << "Добавить ещё? \n1)Да\n2)Нет\n";
+			flag = Check();
 		}
+	} while (flag == 1);
+	system("CLS");
+	cout << "Наш вектор: ";
+	for (int i = 0; i < myVector.size(); i++) cout << myVector[i] << " ";
+	Three B(myVector[0]);
+	for (int i = 1; i < myVector.size(); i++) B.insert(myVector[i]);
+	std::vector<int>newVector;
+	for (int i = 0; i < myVector.size(); i++) {
 
-		if (count < 2)
+		if (B.contains(myVector[i]))
 		{
-			current_no_repeat++;
+			B.erase(myVector[i]);
+
 		}
-
+		else newVector.push_back(myVector[i]);
 	}
-	std::vector<int> newVector((myVector.capacity() - current_no_repeat) / 2);
-
-	for (int i = 0; i < myVector.capacity(); i++)
-	{
-		int count = 0;
-		for (int j = 0; j < myVector.capacity(); j++)
-		{
-			if (myVector[i] == myVector[j]) count++;
-		}
-
-		if (count > 1)
-		{
-			newVector.push_back(myVector[i]);
-		}
-
-	}
-	remove(newVector);
-	for (int i = 1; i < newVector.capacity() / 2; i++)
-	{
-		cout << newVector[i] << ' ';
-	}
-
-}
-
-int Check()
-{
-	int number = 0;
-	while (!(cin >> number) || (cin.peek() != '\n'))
-	{
-		cin.clear();
-		while (cin.get() != '\n');
-		cout << "Enter a number" << endl;
-	}
-	return number;
+	remove(newVector); //удалим дубликаты
+	cout << "\nПоворяющиеся элементы: ";
+	for (int i = 0; i < newVector.size(); i++) cout << newVector[i] << " ";
 }
 
 int main() {
@@ -457,9 +443,7 @@ int main() {
 			break;
 		case 5:
 			cout << "\nСреднее время заполнения контейнера на 1000: " << TestFirst(1000);
-			cout << "\nСреднее время заполнения контейнера на 5000: " << TestFirst(5000);
 			cout << "\nСреднее время заполнения контейнера на 10 000:" << TestFirst(10000);
-			cout << "\nСреднее время заполнения контейнера на 50000: " << TestFirst(50000);
 			cout << "\nСреднее время заполнения контейнера на 100 000: " << TestFirst(100000);
 			cout << "\nСреднее время поиска в заполненном контейнере на 1000: " << TestSecond(1000);
 			cout << "\nСреднее время поиска в заполненном контейнере на 10 000: " << TestSecond(10000);
