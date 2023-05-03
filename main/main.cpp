@@ -4,16 +4,19 @@
 #include<vector>
 
 using namespace std;
+template<typename T>
 class Three {
 	struct Leaves {
-		int value;
+		T value;
 		Leaves* Left = nullptr;
 		Leaves* Right = nullptr;
 	};
+	int tmp_max = 0;
 	int count = 0;
 	int height = 0;
+	int tmp_height = 0;
 	Leaves* root = new Leaves;
-	Leaves* rec_erase(Leaves* elem, int key) {
+	Leaves* rec_erase(Leaves* elem, T key) {
 		if (elem == NULL) return elem;
 		else if (key < elem->value) elem->Left = rec_erase(elem->Left, key);
 		else if (key > elem->value) elem->Right = rec_erase(elem->Right, key);
@@ -34,16 +37,63 @@ class Three {
 			}
 
 			else {
-				struct Leaves* tmp = FindMin(elem->Right);
+				struct Leaves* tmp = find_min(elem->Right);
 				elem->value = tmp->value;
 				elem->Right = rec_erase(elem->Right, tmp->value);
 			}
 			this->count--;
-
+			//	this->height--;
 		}
 		return elem;
 	}
-	bool rec_insert(Leaves* elem, int key) {
+
+	void rec_get_height(Leaves* root, int level) {
+		if (root)
+		{
+
+
+			rec_get_height(root->Left, level + 1);
+			rec_get_height(root->Right, level + 1);
+
+		}
+
+		if (this->tmp_height < level)this->tmp_height = level;
+	}
+	void need_balance() {
+		this->tmp_height = 0;
+		rec_get_height(this->root->Left, 0);
+		int left_height = this->tmp_height;
+		this->tmp_height = 0;
+		rec_get_height(this->root->Right, 0);
+		int right_height = this->tmp_height;
+
+		if (left_height - right_height > 1 && right_height != left_height)//левое больше правого
+		{
+			Leaves* tmp = this->root->Left->Right; //Берем C
+			Leaves* head = this->root;
+
+			this->root = this->root->Left; //Тянем B 
+			head->Left = tmp;
+			this->root->Right = head;//
+
+
+
+		}
+		if (right_height - left_height > 1 && right_height != left_height) {
+			Leaves* tmp = this->root->Right->Left; //Берем A
+			Leaves* head = this->root;
+
+			this->root = this->root->Right; //Тянем B 
+			head->Right = tmp;
+			this->root->Left = head;//
+
+		}
+	}
+
+
+
+
+	bool rec_insert(Leaves* elem, T key) {
 
 		if (elem == nullptr || key == elem->value) return false;
 		if (key > elem->value) {
@@ -55,7 +105,7 @@ class Three {
 				Leaves* tmp = new Leaves;
 				elem->Right = tmp;
 				tmp->value = key;
-				this->height++;
+				//this->height++;
 			}
 		}
 		else if (key < elem->value) {
@@ -66,13 +116,13 @@ class Three {
 				Leaves* tmp = new Leaves;
 				elem->Left = tmp;
 				tmp->value = key;
-				this->height++;
+				//this->height++;
 			}
 		}
 		return true;
 
 	}
-	Leaves* rec_contains(Leaves* elem, int key) {
+	Leaves* rec_contains(Leaves* elem, T key) {
 		//if (elem == nullptr) return 0;
 		//if (elem->value == key) return 1;
 		//if (elem->value > key) return rec_contains(elem->Right, key);
@@ -84,21 +134,19 @@ class Three {
 		}
 		return elem;
 	}
-	void rec_print(Leaves* root, int ident, int level) const
+	void rec_print(Leaves* root, int level)
 	{
 		if (root)
 		{
-			rec_print(root->Left, -1, level + 2);
-			for (int i = 0; i < level; i++) cout << "   ";
-			if (ident == 0)
-				cout << root->value << "----------------------------------" << endl;
-			if (ident == 1)
-				cout << root->value << endl;
-			if (ident == -1)
-				cout << root->value << endl;
-			rec_print(root->Right, 1, level + 2);
-		}
 
+
+			rec_print(root->Left, level + 1);
+			for (int i = 0; i < level; i++) cout << "      ";
+			cout << root->value << endl;
+			rec_print(root->Right, level + 1);
+
+		}
+		if (this->height < level)this->height = level;
 	}
 	void clear(Leaves*& elem)
 	{
@@ -123,9 +171,9 @@ class Three {
 		copy(first->Left, second->Left);
 		copy(first->Right, second->Right);
 	}
-	Leaves* FindMin(Leaves* elem) {
+	Leaves* find_min(Leaves* elem) {
 		if (elem->Left) {
-			return FindMin(elem->Left);
+			return find_min(elem->Left);
 		}
 		return elem;
 	}
@@ -136,16 +184,21 @@ public:
 		this->count = src.count;
 	}
 	~Three() {
-		clear(root); this->count = 0; this->height = 0;
+		clear(root); this->count = 0;// this->height = 0;
 	}
-	Three(int key) {
+	Three(T key) {
 		//Leaves* root = new Leaves;
 		root->value = key;
 		this->count = 1;
-		this->height = 1;
+		//this->height = 1;
 	}
 	void print() {
-		rec_print(this->root, 1, this->height);
+		need_balance();
+		this->height = 1;
+		rec_print(this->root, 0);
+		cout << "Общая высота " << this->height;
+
+
 	}
 
 	Three& operator=(const Three& src)
@@ -156,29 +209,29 @@ public:
 		this->count = src.count;
 		return *this;
 	}
-	bool insert(int key) {
+	bool insert(T key) {
 
 		bool tmp = rec_insert(this->root, key);
 		if (tmp) this->count++;
 		return tmp;
 
 	}//вставка элемента
-	bool contains(int key) {
+	bool contains(T key) {
 		if (rec_contains(this->root, key)) return true;
 		return false;
 	} //проверка наличия элемента
 
-	int FindM() {
+	int find_m() {
 		if (this->count == 0) {
 			std::cout << "Нет элементов";
 			return 0;
 		}
-		else return (FindMin(this->root))->value;
+		else return (find_min(this->root))->value;
 	}
-	bool erase(int key) {
+
+	bool erase(T key) {
 		this->root = rec_erase(this->root, key);
 		return true;
-		//--------------------------------------------------------------
 	} //удаление элемента
 };
 
@@ -191,19 +244,19 @@ size_t lcg() {
 #include <chrono>
 using namespace std::chrono;
 
-
-double TestFirstHelp(int value, bool Is_Vector)
+template<typename T>
+double test_first_help(int value, bool Is_Vector)
 {
 	if (!Is_Vector) {
 		//Отсечь  время
 		auto start = high_resolution_clock::now();
-		Three B(lcg());
+		Three<T> B(lcg());
 		for (int i = 0; i < value - 1; i++) B.insert(lcg());
 		auto stop = high_resolution_clock::now();
 		chrono::duration<double> duration = stop - start;
 		return (double)duration.count();
 	}
-	vector<int> TimeVector(value);
+	vector<T> TimeVector(value);
 	//для 100 раз
 	auto start = high_resolution_clock::now();
 	for (int i = 0; i < value - 1; i++)  TimeVector.push_back(lcg());
@@ -211,9 +264,10 @@ double TestFirstHelp(int value, bool Is_Vector)
 	chrono::duration<double> duration = stop - start;
 	return(double)duration.count();
 }
-double TestSecondHelp(int value, bool Is_Vector) {
+template<typename T>
+double test_second_help(int value, bool Is_Vector) {
 	if (!Is_Vector) {
-		Three B(lcg());
+		Three<T> B(lcg());
 		for (int j = 0; j < value; j++) B.insert(lcg());
 		auto start = high_resolution_clock::now();
 		B.contains(lcg());
@@ -221,7 +275,7 @@ double TestSecondHelp(int value, bool Is_Vector) {
 		chrono::duration<double> duration = stop - start;
 		return (double)duration.count();
 	}
-	vector<int> TimeVector(value);
+	vector<T> TimeVector(value);
 	for (int i = 0; i < value; i++)TimeVector.push_back(lcg());
 	auto start = high_resolution_clock::now();
 	find(TimeVector.begin(), TimeVector.end(), lcg());    //erase(lcg());
@@ -231,10 +285,11 @@ double TestSecondHelp(int value, bool Is_Vector) {
 
 
 }
-double TestThirdHelp(int value, bool Is_Vector = true)
+template<typename T>
+double test_third_help(int value, bool Is_Vector = true)
 {
 	if (!Is_Vector) {
-		Three B(lcg());
+		Three <T>B(lcg());
 		for (int i = 0; i < value - 1; i++)B.insert(lcg());
 		auto start = high_resolution_clock::now();
 		B.insert(lcg());
@@ -246,13 +301,14 @@ double TestThirdHelp(int value, bool Is_Vector = true)
 
 
 }
-double TestFirst(int value) {
+template<typename T>
+double test_first(T value) {
 	double sum = 0;
 
 	//для 100 раз
 	for (int j = 0; j < 100; j++) {
 
-		sum += TestFirstHelp(value, false);
+		sum += test_first_help<T>(value, false);
 	}
 	//остановить время
 	//время добавить в вектор
@@ -260,12 +316,13 @@ double TestFirst(int value) {
 	//сумму вектора времени делим на 100 и возвращаем
 	return sum / 100;
 }
-double TestSecond(int value) {
+template<typename T>
+double test_second(T value) {
 	double  sum = 0;
 	//для 1000 раз
 	//Отсечь  время
 	for (int j = 0; j < 1000; j++) {
-		sum += TestSecondHelp(value, false);
+		sum += test_second_help<T>(value, false);
 	}
 	//остановить время
 	//время добавить в вектор
@@ -274,13 +331,14 @@ double TestSecond(int value) {
 
 	return sum / 1000;
 }
-double TestThird(int value) {
+template<typename T>
+double test_third(T value) {
 
 	double  sum = 0;
 	//для 1000 раз
 	//Отсечь  время
 	for (int j = 0; j < 1000; j++) {
-		sum += TestThirdHelp(value);
+		sum += test_third_help<T>(value);
 	}
 	//остановить время
 	//время добавить в вектор
@@ -289,18 +347,21 @@ double TestThird(int value) {
 	return sum / 1000;
 }
 
-double TestVectorFirst(int value) {
+
+template<typename T>
+double test_vector_first(T value) {
 
 	double sum = 0;
 	//время добавить в вектор
 	for (int j = 0; j < 100; j++) {
 
-		sum += TestFirstHelp(value, true);
+		sum += test_first_help<T>(value, true);
 	}
 	//сумму вектора времени делим на 100 и возвращаем
 	return sum / 100;
 }
-double TestVectorSecond(int value) {
+template<typename T>
+double test_vector_second(T value) {
 
 	//для 1000 раз
 	//Отсечь  время
@@ -308,7 +369,7 @@ double TestVectorSecond(int value) {
 	double sum = 0;
 	for (int j = 0; j < 1000; j++) {
 
-		sum += TestSecondHelp(value, true);
+		sum += test_second_help<T>(value, true);
 
 	}
 	//остановить время
@@ -317,8 +378,9 @@ double TestVectorSecond(int value) {
 	//сумму вектора времени делим на 1000 и возвращаем
 	return sum / 1000;
 }
-double TestVectorThird(int value) {
-	vector<int> TimeVector(value);
+template<typename T>
+double test_vector_third(T value) {
+	vector<T> TimeVector(value);
 	//для 1000 раз
 	//Отсечь  время
 	double sum = 0;
@@ -340,7 +402,7 @@ double TestVectorThird(int value) {
 	return sum / 1000;
 }
 
-int Check()
+int CheckChoise()
 {
 	int number = 0;
 	while (!(cin >> number) || (cin.peek() != '\n'))
@@ -352,7 +414,20 @@ int Check()
 	return number;
 }
 
-void remove(std::vector<int>& v)
+double Check()
+{
+	double number = 0;
+	while (!(cin >> number) || (cin.peek() != '\n'))
+	{
+		cin.clear();
+		while (cin.get() != '\n');
+		cout << "Input correct value" << endl;
+	}
+	return number;
+}
+
+template<typename T>
+void remove(std::vector<T>& v)
 {
 	auto end = v.end();
 	for (auto it = v.begin(); it != end; ++it) {
@@ -361,31 +436,32 @@ void remove(std::vector<int>& v)
 
 	v.erase(end, v.end());
 }
-void VectorReturn()
+template<typename T>
+void vector_return()
 {
-	int tmp;
+	T tmp;
 	int flag = 1;
-	std::vector<int> myVector;
+	std::vector<T> myVector;
 	do {
 		cout << "Введите эелмент вектора : ";
 		tmp = Check();
 		myVector.push_back(tmp);
 		cout << "Добавить ещё? \n1)Да\n2)Нет\n";
-		flag = Check();
+		flag = CheckChoise();
 		while (flag != 1 && flag != 2) {
 			cout << "\nНет такого варианта ответа\n";
 			_getch();
 			system("CLS");
 			cout << "Добавить ещё? \n1)Да\n2)Нет\n";
-			flag = Check();
+			flag = CheckChoise();
 		}
 	} while (flag == 1);
 	system("CLS");
 	cout << "Наш вектор: ";
 	for (int i = 0; i < myVector.size(); i++) cout << myVector[i] << " ";
-	Three B(myVector[0]);
+	Three <T>B(myVector[0]);
 	for (int i = 1; i < myVector.size(); i++) B.insert(myVector[i]);
-	std::vector<int>newVector;
+	std::vector<T>newVector;
 	for (int i = 0; i < myVector.size(); i++) {
 
 		if (B.contains(myVector[i]))
@@ -400,78 +476,105 @@ void VectorReturn()
 	for (int i = 0; i < newVector.size(); i++) cout << newVector[i] << " ";
 }
 
-int main() {
+template<typename T>
+void main1() {
 
-	setlocale(LC_ALL, "Russian");
-	int tmp_value;
+
+	T tmp_value;
 	cout << "Введите значение первого элемена дерева: ";
 	tmp_value = Check();
-	Three A(tmp_value);
-
+	Three<T> A(tmp_value);
+	int tmp;
 	do {
 		system("CLS");
 		cout << "Наши элементы :\n";
 		A.print();
 		cout << "\nВыберите Действие : \n1)Добавить элемент в дерево\n2)Удалить элемент из дерева\n3)Проверить существует ли элемент\n4)Минимальное значение дерева\n5)Произвести тесты\n6)Заполнить вектор элементами и вернуть повторяющиея значения\n7)Выход\n";
-		tmp_value = Check();
-		switch (tmp_value)
+		tmp = CheckChoise();
+		switch (tmp)
 		{
 		case 1:
 			cout << "Введите элемент:";
 			tmp_value = Check();
 			if (A.insert(tmp_value)) cout << "\nУспешно";
-			tmp_value = 0;
+			tmp = 0;
 			_getch();
 			break;
 		case 2:
 			cout << "Введите значение удаляемого элемента:";
 			tmp_value = Check();
 			A.erase(tmp_value);
-			tmp_value = 0;
+			tmp = 0;
 			break;
 		case 3:
 			cout << "Введите элемент:";
 			tmp_value = Check();
 			if (A.contains(tmp_value)) cout << "\nСуществует";
 			else cout << "\nНе существует";
-			tmp_value = 0;
+			tmp = 0;
 			_getch();
 			break;
 		case 4:
-			if (A.FindM())cout << "Минимальное значение дерева : " << A.FindM();
+			if (A.find_m())cout << "Минимальное значение дерева : " << A.find_m();
 			_getch();
 			break;
 		case 5:
-			cout << "\nСреднее время заполнения контейнера на 1000: " << TestFirst(1000);
-			cout << "\nСреднее время заполнения контейнера на 10 000:" << TestFirst(10000);
-			cout << "\nСреднее время заполнения контейнера на 100 000: " << TestFirst(100000);
-			cout << "\nСреднее время поиска в заполненном контейнере на 1000: " << TestSecond(1000);
-			cout << "\nСреднее время поиска в заполненном контейнере на 10 000: " << TestSecond(10000);
-			cout << "\nСреднее время поиска в заполненном контейнере на 100 000: " << TestSecond(100000);
-			cout << "\nСреднее время заполнения и удаления элементов контейнера 1000: " << TestThird(1000);
+			cout << "\nСреднее время заполнения контейнера на 1000: " << test_first(1000);
+			cout << "\nСреднее время заполнения контейнера на 10 000:" << test_first(10000);
+			cout << "\nСреднее время заполнения контейнера на 100 000: " << test_first(100000);
+			cout << "\nСреднее время поиска в заполненном контейнере на 1000: " << test_second(1000);
+			cout << "\nСреднее время поиска в заполненном контейнере на 10 000: " << test_second(10000);
+			cout << "\nСреднее время поиска в заполненном контейнере на 100 000: " << test_second(100000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 1000: " << test_third(1000);
 
-			cout << "\nСреднее время заполнения и удаления элементов контейнера 10 000: " << TestThird(10000);
-			cout << "\nСреднее время заполнения и удаления элементов контейнера 100 000: " << TestThird(100000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 10 000: " << test_third(10000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 100 000: " << test_third(100000);
 
-			cout << "\nСреднее время заполнения вектора на 1000: " << TestVectorFirst(1000);
-			cout << "\nСреднее время заполнения вектора на 10 000: " << TestVectorFirst(10000);
-			cout << "\nСреднее время заполнения вектора на 100 000: " << TestVectorFirst(1000000);
-			cout << "\nСреднее время поиска в заполненном векторе на 1000: " << TestVectorSecond(1000);
-			cout << "\nСреднее время поиска в заполненном векторе на 10 000: " << TestVectorSecond(10000);
-			cout << "\nСреднее время поиска в заполненном векторе на 100 000: " << TestVectorSecond(100000);
-			cout << "\nСреднее время заполнения и удаления элементов контейнера 1000: " << TestVectorThird(1000);
-			cout << "\nСреднее время заполнения и удаления элементов контейнера 10 000: " << TestVectorThird(10000);
-			cout << "\nСреднее время заполнения и удаления элементов контейнера 100 000: " << TestVectorThird(100000);
+			cout << "\nСреднее время заполнения вектора на 1000: " << test_vector_first(1000);
+			cout << "\nСреднее время заполнения вектора на 10 000: " << test_vector_first(10000);
+			cout << "\nСреднее время заполнения вектора на 100 000: " << test_vector_first(1000000);
+			cout << "\nСреднее время поиска в заполненном векторе на 1000: " << test_vector_second(1000);
+			cout << "\nСреднее время поиска в заполненном векторе на 10 000: " << test_vector_second(10000);
+			cout << "\nСреднее время поиска в заполненном векторе на 100 000: " << test_vector_second(100000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 1000: " << test_vector_third(1000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 10 000: " << test_vector_third(10000);
+			cout << "\nСреднее время заполнения и удаления элементов контейнера 100 000: " << test_vector_third(100000);
 			_getch();
 			break;
 		case 6:
-			VectorReturn();
+			vector_return<T>();
 			_getch();
 			break;
 		default:
 			break;
 		}
 
-	} while (tmp_value != 7);
+	} while (tmp != 7);
+
+}
+
+int main() {
+	setlocale(LC_ALL, "Russian");
+	int tmp;
+	cout << "Выберите параметр дерева:\n1)int\n2)double\n3)float\n";
+	tmp = CheckChoise();
+	switch (tmp)
+	{
+	case 1:
+		main1<int>();
+		break;
+	case 2:
+		main1<double>();
+		break;
+	case 3:
+		main1<float>();
+		break;
+	default:
+		cout << "\nНет такого варианта\n";
+		_getch();
+		system("CLS");
+
+		break;
+	}
 
 }
